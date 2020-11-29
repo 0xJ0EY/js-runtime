@@ -9,7 +9,7 @@ pub struct Token {
     pub range: (usize, usize),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum TokenType {
     Identifier,
     Operator,
@@ -22,7 +22,5 @@ pub enum TokenType {
 }
 
 pub fn tokenize(file: &String) -> Vec<Token> {
-    let tokens = tokenizer::tokenize(file);
-
-    return tokens;
+    tokenizer::tokenize(file)
 }

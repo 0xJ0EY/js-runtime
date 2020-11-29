@@ -1,1 +1,2 @@
-"foo\" is " + 'bar'
+function test() {
+}

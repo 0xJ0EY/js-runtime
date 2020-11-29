@@ -14,7 +14,7 @@ impl Tokenizer {
     }
 
     pub fn has_tokens(&self) -> bool {
-        self.token() != None
+        self.token().is_some()
     }
 
     pub fn token(&self) -> Option<&char> {
