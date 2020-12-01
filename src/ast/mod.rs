@@ -6,6 +6,7 @@ mod parser;
 mod parsers;
 mod nodes;
 
+#[derive(Debug)]
 pub struct AstProgram {
     body: Vec<AstNode>,
 }
