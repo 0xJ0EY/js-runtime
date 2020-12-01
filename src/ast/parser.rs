@@ -2,7 +2,7 @@ use core::panic;
 
 use crate::tokenizer::Token;
 
-use super::{AstProgram, parsers::parse_block_statement};
+use super::{AstProgram, parsers::{parse_block_statement, parse_function_declaration}};
 
 pub struct AstParser<'a> {
     index: usize,
@@ -27,6 +27,14 @@ impl<'a> AstParser<'a> {
 
     pub fn peek(&self) -> Option<&Token> {
         self.tokens.get(self.index + 1)
+    }
+
+    pub fn peek_steps(&self, steps: usize) -> Option<&Token> {
+        self.tokens.get(self.index + steps)
+    }
+
+    pub fn peek_back(&self, steps: usize) -> Option<&Token> {
+        self.tokens.get(self.index - steps)
     }
 
     pub fn step(&mut self) {
@@ -54,8 +62,13 @@ pub fn parse(tokens: &Vec<Token>) -> Option<()> {
 
         let block_statement = parse_block_statement(&mut parser);
         if block_statement.is_some() {
-
             dbg!(block_statement);
+            continue;
+        }
+
+        let function_declaration = parse_function_declaration(&mut parser);
+        if function_declaration.is_some() {
+            dbg!(function_declaration);
             continue;
         }
 

@@ -1,2 +1,5 @@
-function test() {
+{
+    function test() {
+    
+    }
 }
