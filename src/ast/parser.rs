@@ -2,7 +2,7 @@ use core::panic;
 
 use crate::tokenizer::Token;
 
-use super::{AstProgram, nodes::AstNode, parsers::{parse_block_statement, parse_function_declaration, parse_variable_declaration}};
+use super::{AstProgram, nodes::AstNode, parsers::{is_start_block_statement, is_start_function_declaration, is_variable_declaration, parse_block_statement, parse_function_declaration, parse_variable_declaration}};
 
 pub struct AstParser<'a> {
     index: usize,
@@ -60,27 +60,29 @@ pub fn parse(tokens: &Vec<Token>) -> Option<()> {
 
     while parser.has_tokens() {
 
-        let block_statement = parse_block_statement(&mut parser);
-        if block_statement.is_some() {
+        let token = parser.token().unwrap();
+
+        if is_start_block_statement(token) {
+            let block_statement = parse_block_statement(&mut parser);
             let value = AstNode::BlockStatement { inner: block_statement.unwrap() };
             program.body.push(value);
 
             continue;
         }
 
-        let function_declaration = parse_function_declaration(&mut parser);
-        if function_declaration.is_some() {
+        if is_start_function_declaration(&parser) {
+            let function_declaration = parse_function_declaration(&mut parser);
             let value = AstNode::FunctionDeclaration { inner: function_declaration.unwrap() };
             program.body.push(value);
 
             continue;
         }
 
-        let variable_declaration = parse_variable_declaration(&mut parser);
-        if variable_declaration.is_some() {
+        if is_variable_declaration(&parser) {
+            let variable_declaration = parse_variable_declaration(&mut parser);
             let value = AstNode::VariableDeclaration { inner: variable_declaration.unwrap() };
             program.body.push(value);
-
+            
             continue;
         }
 

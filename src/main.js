@@ -1,2 +1,5 @@
-var x = 0;
-var y = 1;
+{
+    function test() {
+        var x = 1;
+    }
+}

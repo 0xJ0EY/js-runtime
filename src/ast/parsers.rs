@@ -107,7 +107,7 @@ pub fn parse_function_declaration(parser: &mut AstParser) -> Option<FunctionDecl
     )
 }
 
-fn is_start_function_declaration(parser: &AstParser) -> bool {
+pub fn is_start_function_declaration(parser: &AstParser) -> bool {
     let mut current_step = 0; 
 
     // Function keyword
@@ -159,6 +159,9 @@ fn is_function_close_parenthesis(token: &Token) -> bool {
     token.token_type == TokenType::Parenthesis && token.value == String::from(")")
 }
 
+/*
+Variable declaration
+*/
 pub fn parse_variable_declaration(parser: &mut AstParser) -> Option<VariableDeclaration> {
     let mut declarations = Vec::<VariableDeclarator>::new();
 
@@ -214,7 +217,7 @@ pub fn parse_variable_declaration(parser: &mut AstParser) -> Option<VariableDecl
 }
 
 // TODO: Currently we only support single variables
-fn is_variable_declaration(parser: &AstParser) -> bool {
+pub fn is_variable_declaration(parser: &AstParser) -> bool {
 
     let keyword = parser.peek_steps(0);
     if keyword.is_none() || !is_variable_keyword(keyword.unwrap()) {
@@ -258,4 +261,11 @@ fn is_variable_assignment(token: &Token) -> bool {
 
 fn is_variable_terminator(token: &Token) -> bool {
     token.token_type == TokenType::Terminator && token.value == String::from(";")
+}
+
+/*
+Function call
+*/
+fn parse_expression_statement(parser: &AstParser)  -> Option<VariableDeclaration>  {
+    None
 }
