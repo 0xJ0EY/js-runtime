@@ -55,13 +55,7 @@ pub struct FunctionDeclaration {
 
 #[derive(Debug)]
 pub enum AstNode {
-    VariableDeclaration {
-        inner: VariableDeclaration,
-    },
-    BlockStatement {
-        inner: BlockStatement
-    },
-    FunctionDeclaration {
-        inner: FunctionDeclaration
-    },
+    VariableDeclaration(VariableDeclaration),
+    BlockStatement(BlockStatement),
+    FunctionDeclaration(FunctionDeclaration),
 }

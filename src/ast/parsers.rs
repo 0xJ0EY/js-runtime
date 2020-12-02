@@ -1,5 +1,3 @@
-use std::thread::current;
-
 use crate::tokenizer::{Token, TokenType};
 
 use super::{nodes::AstNode, nodes::BlockStatement, nodes::FunctionDeclaration, nodes::Identifier, nodes::VariableDeclaration, nodes::VariableDeclarator, nodes::VariableLiteral, parser::AstParser, nodes::Literal};
@@ -24,19 +22,22 @@ pub fn parse_block_statement(parser: &mut AstParser) -> Option<BlockStatement> {
         // Block statement
         let block_statement = parse_block_statement(parser);
         if block_statement.is_some() {
-            let value = AstNode::BlockStatement {
-                inner: block_statement.unwrap()
-            };
-
+            let value = AstNode::BlockStatement(block_statement.unwrap());
             body.push(value);
         }
 
         // Function declaration
         let function_declaration = parse_function_declaration(parser);
         if function_declaration.is_some() {
-            let value = AstNode::FunctionDeclaration {
-                inner: function_declaration.unwrap()
-            };
+            let value = AstNode::FunctionDeclaration(function_declaration.unwrap());
+
+            body.push(value);
+        }
+
+        // Variable declaration
+        let variable_declaration = parse_variable_declaration(parser);
+        if variable_declaration.is_some() {
+            let value = AstNode::VariableDeclaration(variable_declaration.unwrap());
 
             body.push(value);
         }

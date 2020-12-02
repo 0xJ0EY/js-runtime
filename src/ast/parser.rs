@@ -64,7 +64,7 @@ pub fn parse(tokens: &Vec<Token>) -> Option<()> {
 
         if is_start_block_statement(token) {
             let block_statement = parse_block_statement(&mut parser);
-            let value = AstNode::BlockStatement { inner: block_statement.unwrap() };
+            let value = AstNode::BlockStatement(block_statement.unwrap());
             program.body.push(value);
 
             continue;
@@ -72,7 +72,7 @@ pub fn parse(tokens: &Vec<Token>) -> Option<()> {
 
         if is_start_function_declaration(&parser) {
             let function_declaration = parse_function_declaration(&mut parser);
-            let value = AstNode::FunctionDeclaration { inner: function_declaration.unwrap() };
+            let value = AstNode::FunctionDeclaration(function_declaration.unwrap());
             program.body.push(value);
 
             continue;
@@ -80,7 +80,7 @@ pub fn parse(tokens: &Vec<Token>) -> Option<()> {
 
         if is_variable_declaration(&parser) {
             let variable_declaration = parse_variable_declaration(&mut parser);
-            let value = AstNode::VariableDeclaration { inner: variable_declaration.unwrap() };
+            let value = AstNode::VariableDeclaration(variable_declaration.unwrap());
             program.body.push(value);
             
             continue;
