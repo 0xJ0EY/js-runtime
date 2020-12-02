@@ -2,7 +2,7 @@ use std::thread::current;
 
 use crate::tokenizer::{Token, TokenType};
 
-use super::{nodes::AstNode, nodes::BlockStatement, nodes::FunctionDeclaration, parser::AstParser, nodes::Identifier};
+use super::{nodes::AstNode, nodes::BlockStatement, nodes::FunctionDeclaration, nodes::Identifier, nodes::VariableDeclaration, nodes::VariableDeclarator, nodes::VariableLiteral, parser::AstParser, nodes::Literal};
 
 /*
 Block statement
@@ -107,7 +107,7 @@ pub fn parse_function_declaration(parser: &mut AstParser) -> Option<FunctionDecl
     )
 }
 
-pub fn is_start_function_declaration(parser: &AstParser) -> bool {
+fn is_start_function_declaration(parser: &AstParser) -> bool {
     let mut current_step = 0; 
 
     // Function keyword
@@ -147,7 +147,6 @@ fn is_function_name(token: &Token) -> bool {
     token.token_type == TokenType::Identifier
 }
 
-
 fn is_function_open_parenthesis(token: &Token) -> bool {
     token.token_type == TokenType::Parenthesis && token.value == String::from("(")
 }
@@ -158,4 +157,105 @@ fn has_function_paremeter(token: &Token) -> bool {
 
 fn is_function_close_parenthesis(token: &Token) -> bool {
     token.token_type == TokenType::Parenthesis && token.value == String::from(")")
+}
+
+pub fn parse_variable_declaration(parser: &mut AstParser) -> Option<VariableDeclaration> {
+    let mut declarations = Vec::<VariableDeclarator>::new();
+
+    if !is_variable_declaration(parser) {
+        return None;
+    }
+
+    let keyword = parser.consume().unwrap();
+    let start = keyword.range.0;
+
+    let name = parser.consume().unwrap();
+    let name_range = name.range.clone();
+
+    let identifier = Identifier {
+        name: name.value.clone(),
+        range: (name.range.0, name.range.1)
+    };
+
+    parser.step(); // Skip assignment
+
+    let value = parser.consume().unwrap();
+    let value_range = value.range.clone();
+
+    let literal = match value.token_type {
+        TokenType::Number |
+        TokenType::String => { 
+            Some(VariableLiteral::Literal(Literal{
+                value: value.value.clone(),
+                raw_value: value.raw_value.clone(),
+                range: value.range, 
+            }))
+        },
+        _ => { None }
+    };
+    
+    let literal = literal.unwrap();
+
+    let declarator = VariableDeclarator {
+        id: identifier,
+        init: literal,
+        range: (name_range.0, value_range.1)
+    };
+
+    declarations.push(declarator);
+
+    let terminator = parser.consume().unwrap();
+    let end = terminator.range.1;
+
+    Some(VariableDeclaration {
+        declarations: declarations,
+        range: (start, end)
+    })
+}
+
+// TODO: Currently we only support single variables
+fn is_variable_declaration(parser: &AstParser) -> bool {
+
+    let keyword = parser.peek_steps(0);
+    if keyword.is_none() || !is_variable_keyword(keyword.unwrap()) {
+        return false;
+    }
+
+    let name  = parser.peek_steps(1);
+    if name.is_none() || !is_variable_name(name.unwrap()) {
+        return false;
+    }
+
+    let assignment_operator = parser.peek_steps(2);
+    if assignment_operator.is_none() || !is_variable_assignment(assignment_operator.unwrap()) {
+        return false;
+    }
+
+    let init =  parser.peek_steps(3);
+    if init.is_none() {
+        return false;
+    }
+
+    let terminator = parser.peek_steps(4);
+    if terminator.is_none() || !is_variable_terminator(terminator.unwrap()) {
+        return false;
+    }
+
+    true
+}
+
+fn is_variable_keyword(token: &Token) -> bool {
+    token.token_type == TokenType::Identifier && token.value == String::from("var")
+}
+
+fn is_variable_name(token: &Token) -> bool {
+    token.token_type == TokenType::Identifier
+}
+
+fn is_variable_assignment(token: &Token) -> bool {
+    token.token_type == TokenType::Operator && token.value == String::from("=")
+}
+
+fn is_variable_terminator(token: &Token) -> bool {
+    token.token_type == TokenType::Terminator && token.value == String::from(";")
 }

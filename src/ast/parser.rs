@@ -2,7 +2,7 @@ use core::panic;
 
 use crate::tokenizer::Token;
 
-use super::{nodes::AstNode, AstProgram, parsers::{parse_block_statement, parse_function_declaration}};
+use super::{AstProgram, nodes::AstNode, parsers::{parse_block_statement, parse_function_declaration, parse_variable_declaration}};
 
 pub struct AstParser<'a> {
     index: usize,
@@ -71,6 +71,14 @@ pub fn parse(tokens: &Vec<Token>) -> Option<()> {
         let function_declaration = parse_function_declaration(&mut parser);
         if function_declaration.is_some() {
             let value = AstNode::FunctionDeclaration { inner: function_declaration.unwrap() };
+            program.body.push(value);
+
+            continue;
+        }
+
+        let variable_declaration = parse_variable_declaration(&mut parser);
+        if variable_declaration.is_some() {
+            let value = AstNode::VariableDeclaration { inner: variable_declaration.unwrap() };
             program.body.push(value);
 
             continue;

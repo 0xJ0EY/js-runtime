@@ -1,3 +1,5 @@
+use crate::tokenizer::TokenType;
+
 #[derive(Debug)]
 pub struct Identifier {
     pub name: String,
@@ -7,14 +9,27 @@ pub struct Identifier {
 #[derive(Debug)]
 pub struct Literal {
     pub value: String,
-    pub raw: String,
+    pub raw_value: String,
     pub range: (usize, usize)
+}
+
+#[derive(Debug)]
+pub struct BinaryLiteral { // TODO: Change this to a binary literal
+    pub value: String,
+    pub raw_value: String,
+    pub range: (usize, usize)
+}
+
+#[derive(Debug)]
+pub enum VariableLiteral {
+    Literal(Literal),
+    BinaryLiteral(BinaryLiteral)
 }
 
 #[derive(Debug)]
 pub struct VariableDeclarator {
     pub id: Identifier,
-    pub init: Literal,
+    pub init: VariableLiteral,
     pub range: (usize, usize)
 }
 

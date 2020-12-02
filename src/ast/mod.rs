@@ -1,6 +1,6 @@
 use crate::tokenizer::Token;
 
-use self::{nodes::AstNode, parser::AstParser};
+use self::{nodes::AstNode};
 
 mod parser;
 mod parsers;
