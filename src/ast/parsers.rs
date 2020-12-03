@@ -1,6 +1,6 @@
 use crate::tokenizer::{Token, TokenType};
 
-use super::{nodes::AstNode, nodes::BlockStatement, nodes::FunctionDeclaration, nodes::Identifier, nodes::VariableDeclaration, nodes::VariableDeclarator, nodes::VariableLiteral, parser::AstParser, nodes::Literal};
+use super::{nodes::AstNode, nodes::BlockStatement, nodes::CallExpressionCallee, nodes::ExpressionStatement, nodes::ExpressionStatementExpression, nodes::FunctionDeclaration, nodes::Identifier, nodes::Literal, nodes::VariableDeclaration, nodes::VariableDeclarator, nodes::VariableLiteral, parser::AstParser, nodes::CallExpression};
 
 /*
 Block statement
@@ -265,8 +265,73 @@ fn is_variable_terminator(token: &Token) -> bool {
 }
 
 /*
-Function call
+Expression statement
 */
-fn parse_expression_statement(parser: &AstParser)  -> Option<VariableDeclaration>  {
-    None
+pub fn parse_expression_statement(parser: &mut AstParser) -> Option<ExpressionStatement> {
+
+    // TODO: We currently only support CallExpression statements
+
+    let identifier;
+    let name_range;
+
+    {
+        let name = parser.consume().unwrap();
+        name_range = name.range.clone();
+        identifier = Identifier {
+            name: name.value.clone(),
+            range: name.range.clone()
+        };
+    }
+
+    parser.step(); // Skip open paren
+    parser.step(); // Skip close paren
+    
+    let terminator = parser.consume().unwrap();
+    let end = terminator.range.1;
+
+    Some(ExpressionStatement {
+        expression: ExpressionStatementExpression::CallExpression(
+            CallExpression {
+                callee: CallExpressionCallee::Identifier(identifier),
+                arguments: Vec::new(),
+                range: name_range.clone(),
+            }
+        ),
+        range: (name_range.0, end)
+    })
+
+    // dbg!(terminator);
+
+    // None
+}
+
+pub fn is_expression_statement(parser: &AstParser) -> bool {
+
+    // TODO: We currently only support CallExpression statements
+
+    let name = parser.peek_steps(0);
+    if name.is_none() || !is_expression_name(name.unwrap()) {
+        return false;
+    }
+
+    let open_paren = parser.peek_steps(1);
+    if open_paren.is_none() || !is_function_open_parenthesis(open_paren.unwrap()) {
+        return false;
+    }
+
+    let close_paren = parser.peek_steps(2);
+    if close_paren.is_none() || !is_function_close_parenthesis(close_paren.unwrap()) {
+        return false;
+    }
+
+    let terminator = parser.peek_steps(3);
+    if terminator.is_none() || !is_variable_terminator(terminator.unwrap()) {
+        return false;
+    }
+
+    true
+}
+
+fn is_expression_name(token: &Token) -> bool {
+    token.token_type == TokenType::Identifier
 }
