@@ -54,7 +54,7 @@ impl<'a> AstParser<'a> {
     }
 }
 
-pub fn parse(tokens: &Vec<Token>) -> Option<()> {
+pub fn parse(tokens: &Vec<Token>) -> AstProgram {
     let mut program = AstProgram::new();
     let mut parser = AstParser::new(tokens);
 
@@ -97,7 +97,5 @@ pub fn parse(tokens: &Vec<Token>) -> Option<()> {
         panic!("Unknown token: {:?}", parser.token().unwrap().clone());
     }
 
-    dbg!(program);
-
-    Some(())
+    program
 }

@@ -2,6 +2,7 @@
 
 mod tokenizer;
 mod ast;
+mod runtime;
 
 fn main() {
     println!("Running Joey-Script 1.0");
@@ -9,4 +10,7 @@ fn main() {
     let input = String::from(include_str!("main.js"));
     let tokens = tokenizer::tokenize(&input);
     let ast = ast::parse(&tokens);
+
+    runtime::run(&ast);
+
 }

@@ -8,7 +8,7 @@ mod nodes;
 
 #[derive(Debug)]
 pub struct AstProgram {
-    body: Vec<AstNode>,
+    pub body: Vec<AstNode>,
 }
 
 impl AstProgram {
@@ -19,8 +19,6 @@ impl AstProgram {
     }
 }
 
-pub fn parse(tokens: &Vec<Token>) -> Option<AstProgram> {
-    parser::parse(tokens);
-
-    None
+pub fn parse(tokens: &Vec<Token>) -> AstProgram {
+    parser::parse(tokens)
 }
