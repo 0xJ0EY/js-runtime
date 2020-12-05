@@ -31,14 +31,14 @@ pub struct Variable {
 
 pub struct BlockScope {
     pub functions: HashMap<String, FunctionCall>,
-    pub variables: Vec<Variable>
+    pub variables: HashMap<String, Literal>,
 }
 
 impl BlockScope {
     pub fn new() -> BlockScope {
         BlockScope {
             functions: HashMap::<String, FunctionCall>::new(),
-            variables: Vec::new(),
+            variables: HashMap::<String, Literal>::new(),
         }
     }
 
@@ -53,7 +53,7 @@ impl BlockScope {
 
         BlockScope {
             functions,
-            variables: Vec::new(),
+            variables: HashMap::<String, Literal>::new(),
         }
     }
 }
