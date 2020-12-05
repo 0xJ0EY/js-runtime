@@ -1,1 +1,1 @@
-log("foo", "bar");
+log("JScript > Sanlang");

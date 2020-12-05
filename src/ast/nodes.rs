@@ -6,7 +6,7 @@ pub struct Identifier {
     pub range: (usize, usize)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Literal {
     pub value: String,
     pub raw_value: String,

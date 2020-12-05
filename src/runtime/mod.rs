@@ -9,11 +9,11 @@ pub struct FunctionCall {
 }
 
 pub struct SystemCall {
-    func: Box<dyn Fn(&Vec<Literal>) -> Literal>,
+    func: Box<dyn Fn(&HashMap<String, Literal>) -> Option<Literal>>,
 }
 
 impl SystemCall {
-    fn new(func: impl Fn(&Vec<Literal>) -> Literal + 'static) -> Self {
+    fn new(func: impl Fn(&HashMap<String, Literal>) -> Option<Literal> + 'static) -> Self {
         Self { 
             func: Box::new(func)
         }
@@ -43,17 +43,17 @@ impl BlockScope {
 
     pub fn new_root() -> BlockScope {
         let mut functions = HashMap::<String, FunctionCall>::new();
-        functions.insert("foo".to_string(), FunctionCall { 
-            function_type: FunctionCallType::SystemCall(
-                SystemCall::new(|x| { println!("System call from JScript"); Literal::new()})), 
-                arguments: Vec::new() 
-            }
-        );
 
         functions.insert("log".to_string(), FunctionCall { 
             function_type: FunctionCallType::SystemCall(
-                SystemCall::new(|x| { println!("System call from JScript"); Literal::new()})), 
-                arguments: vec![Literal::from_str("test")]
+                SystemCall::new(|x| { 
+                    let output = x.get(&"output".to_string()).unwrap(); 
+
+                    println!("{}", output.value);
+                    
+                    None
+                })), 
+                arguments: vec![Literal::from_str("output")]
             }
         );
 
@@ -122,11 +122,39 @@ fn parse_expression_statement(runtime: &mut Runtime, statement: &ExpressionState
     }
 
     let function = function.unwrap();
+
+    let args_values = parse_expression_statement_args(statement);
+    let args = &function.arguments;
+    
+    if args.len() != args_values.len() {
+        panic!("Amount of params do not match");
+    }
+
+    let mut args_map = HashMap::<String, Literal>::new();
+
+    for index in 0..args.len() {
+        let key = args.get(index).unwrap().value.clone();
+        let value = args_values.get(index)
+            .unwrap()
+            .clone();
+
+        args_map.insert(key, value);
+    }
+
     match &function.function_type {
         FunctionCallType::SystemCall(syscall) => {
-            (syscall.func)(&function.arguments);
+            (syscall.func)(&args_map);
         },
         _ => { panic!("Unsupported function type") }
+    }
+}
+
+fn parse_expression_statement_args(statement: &ExpressionStatement) -> &Vec<Literal> {
+    match &statement.expression {
+        ExpressionStatementExpression::CallExpression(expression) => {
+            &expression.arguments
+        },
+        _ => { panic!("Unsupported expression: {:?}", &statement.expression) }
     }
 }
 

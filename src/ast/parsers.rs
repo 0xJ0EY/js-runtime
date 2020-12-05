@@ -286,7 +286,36 @@ pub fn parse_expression_statement(parser: &mut AstParser) -> Option<ExpressionSt
 
     parser.step(); // Skip open paren
 
-    // if parser.token().is_some() && 
+    if parser.token().is_some() && is_expression_param(parser.token().unwrap()) {
+        
+        loop {
+            let param = parser.consume();
+            if param.is_some() {
+                let param = param.unwrap();
+
+                arguments.push(
+                    Literal {
+                        raw_value: param.raw_value.clone(),
+                        value: param.value.clone(),
+                        range: param.range,
+                    }
+                );
+            }
+
+            let seperator = parser.token();
+
+            if seperator.is_none() {
+                break;
+            }
+
+            if seperator.is_some() && is_expression_param_seperator(seperator.unwrap()) {
+                parser.step();
+            } else {
+                break;
+            }
+        }
+
+    }
 
     parser.step(); // Skip close paren
     
@@ -297,7 +326,7 @@ pub fn parse_expression_statement(parser: &mut AstParser) -> Option<ExpressionSt
         expression: ExpressionStatementExpression::CallExpression(
             CallExpression {
                 callee: CallExpressionCallee::Identifier(identifier),
-                arguments: Vec::new(),
+                arguments,
                 range: name_range.clone(),
             }
         ),
@@ -339,7 +368,6 @@ pub fn is_expression_statement(parser: &AstParser) -> bool {
     }
 
     let close_paren = parser.peek_steps(2 + offset);
-    dbg!(close_paren);
 
     if close_paren.is_none() || !is_function_close_parenthesis(close_paren.unwrap()) {
         return false;
@@ -354,7 +382,13 @@ pub fn is_expression_statement(parser: &AstParser) -> bool {
 }
 
 fn is_expression_param(token: &Token) -> bool {
-    token.token_type == TokenType::Identifier || token.token_type == TokenType::Number || token.token_type == TokenType::String
+    token.token_type == TokenType::Identifier || 
+    token.token_type == TokenType::Number || 
+    token.token_type == TokenType::String
+}
+
+fn is_expression_param_seperator(token: &Token) -> bool {
+    token.token_type == TokenType::Separator && token.value == ",".to_string()
 }
 
 fn is_expression_name(token: &Token) -> bool {
