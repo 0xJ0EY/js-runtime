@@ -12,5 +12,4 @@ fn main() {
     let ast = ast::parse(&tokens);
 
     runtime::run(&ast);
-
 }

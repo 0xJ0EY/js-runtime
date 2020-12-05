@@ -13,6 +13,16 @@ pub struct Literal {
     pub range: (usize, usize)
 }
 
+impl Literal {
+    pub fn new() -> Self {
+        Self {
+            value: "".to_string(),
+            raw_value: "".to_string(),
+            range: (0,0)
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct BinaryLiteral { // TODO: Change this to a binary literal
     pub value: String,

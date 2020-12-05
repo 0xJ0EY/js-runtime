@@ -4,7 +4,7 @@ use self::{nodes::AstNode};
 
 mod parser;
 mod parsers;
-mod nodes;
+pub mod nodes;
 
 #[derive(Debug)]
 pub struct AstProgram {
