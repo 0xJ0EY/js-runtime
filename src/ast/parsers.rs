@@ -273,6 +273,7 @@ pub fn parse_expression_statement(parser: &mut AstParser) -> Option<ExpressionSt
 
     let identifier;
     let name_range;
+    let mut arguments = Vec::new();
 
     {
         let name = parser.consume().unwrap();
@@ -284,6 +285,9 @@ pub fn parse_expression_statement(parser: &mut AstParser) -> Option<ExpressionSt
     }
 
     parser.step(); // Skip open paren
+
+    // if parser.token().is_some() && 
+
     parser.step(); // Skip close paren
     
     let terminator = parser.consume().unwrap();
@@ -299,10 +303,6 @@ pub fn parse_expression_statement(parser: &mut AstParser) -> Option<ExpressionSt
         ),
         range: (name_range.0, end)
     })
-
-    // dbg!(terminator);
-
-    // None
 }
 
 pub fn is_expression_statement(parser: &AstParser) -> bool {
@@ -319,17 +319,42 @@ pub fn is_expression_statement(parser: &AstParser) -> bool {
         return false;
     }
 
-    let close_paren = parser.peek_steps(2);
+    let mut offset = 0;
+
+    // Check for parameters
+    let param = parser.peek_steps(2);
+    if param.is_some() && is_expression_param(param.unwrap()) {
+        loop {
+            offset += 1;
+            let param = parser.peek_steps(2 + offset);
+        
+            if param.is_none() {
+                return false;
+            }
+
+            if param.is_some() && is_function_close_parenthesis(param.unwrap()) {
+                break;
+            }
+        }
+    }
+
+    let close_paren = parser.peek_steps(2 + offset);
+    dbg!(close_paren);
+
     if close_paren.is_none() || !is_function_close_parenthesis(close_paren.unwrap()) {
         return false;
     }
 
-    let terminator = parser.peek_steps(3);
+    let terminator = parser.peek_steps(3 + offset);
     if terminator.is_none() || !is_variable_terminator(terminator.unwrap()) {
         return false;
     }
 
     true
+}
+
+fn is_expression_param(token: &Token) -> bool {
+    token.token_type == TokenType::Identifier || token.token_type == TokenType::Number || token.token_type == TokenType::String
 }
 
 fn is_expression_name(token: &Token) -> bool {

@@ -9,12 +9,11 @@ pub struct FunctionCall {
 }
 
 pub struct SystemCall {
-    func: Box<dyn Fn(Vec<Literal>) -> Literal>,
+    func: Box<dyn Fn(&Vec<Literal>) -> Literal>,
 }
 
-
 impl SystemCall {
-    fn new(func: impl Fn(Vec<Literal>) -> Literal + 'static) -> Self {
+    fn new(func: impl Fn(&Vec<Literal>) -> Literal + 'static) -> Self {
         Self { 
             func: Box::new(func)
         }
@@ -48,6 +47,13 @@ impl BlockScope {
             function_type: FunctionCallType::SystemCall(
                 SystemCall::new(|x| { println!("System call from JScript"); Literal::new()})), 
                 arguments: Vec::new() 
+            }
+        );
+
+        functions.insert("log".to_string(), FunctionCall { 
+            function_type: FunctionCallType::SystemCall(
+                SystemCall::new(|x| { println!("System call from JScript"); Literal::new()})), 
+                arguments: vec![Literal::from_str("test")]
             }
         );
 
@@ -107,11 +113,9 @@ impl Runtime {
 
 }
 
-
 fn parse_expression_statement(runtime: &mut Runtime, statement: &ExpressionStatement) {
     let name = parse_expression_statement_name(&statement);
     let function = runtime.function(&name);
-
 
     if function.is_none() {
         return;
@@ -120,7 +124,7 @@ fn parse_expression_statement(runtime: &mut Runtime, statement: &ExpressionState
     let function = function.unwrap();
     match &function.function_type {
         FunctionCallType::SystemCall(syscall) => {
-            (syscall.func)(Vec::new());
+            (syscall.func)(&function.arguments);
         },
         _ => { panic!("Unsupported function type") }
     }

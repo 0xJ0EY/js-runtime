@@ -21,6 +21,14 @@ impl Literal {
             range: (0,0)
         }
     }
+
+    pub fn from_str(str: &str) -> Self {
+        Self {
+            value: str.to_string(),
+            raw_value: str.to_string(),
+            range: (0,0)
+        }
+    }
 }
 
 #[derive(Debug)]

@@ -1,1 +1,1 @@
-foo();
+log("foo", "bar");

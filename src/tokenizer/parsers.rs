@@ -121,7 +121,7 @@ pub fn parse_separator(tokenizer: &mut Tokenizer) -> Option<Token> {
 }
 
 fn is_separator(token: &char) -> bool {
-    *token == '.'
+    *token == '.' || *token == ','
 }
 
 pub fn parse_parenthesis(tokenizer: &mut Tokenizer) -> Option<Token> {
