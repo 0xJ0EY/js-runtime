@@ -3,6 +3,7 @@
 mod tokenizer;
 mod ast;
 mod runtime;
+mod util;
 
 fn main() {
     println!("Running Joey-Script 1.0");
