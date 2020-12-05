@@ -1,6 +1,19 @@
 extern crate regex;
 use regex::Regex;
 
+use crate::util::{
+    is_curly_brace,
+    is_escape_char,
+    is_identifier,
+    is_number,
+    is_operator,
+    is_parenthesis,
+    is_separator,
+    is_string_delimiter,
+    is_terminator,
+    is_whitespace
+};
+
 use super::{Token, TokenType, tokenizer::Tokenizer};
 
 pub fn parse_whitespace(tokenizer: &mut Tokenizer) -> Option<()> {
@@ -12,14 +25,6 @@ pub fn parse_whitespace(tokenizer: &mut Tokenizer) -> Option<()> {
 
     tokenizer.consume();
     Some(())
-}
-
-fn is_whitespace(token: &char) -> bool {
-    lazy_static! {
-        static ref RE: Regex = Regex::new(r"\s").unwrap();
-    }
-        
-    RE.is_match(&(*token).to_string())
 }
 
 pub fn parse_identifier(tokenizer: &mut Tokenizer) -> Option<Token> {
@@ -52,14 +57,6 @@ pub fn parse_identifier(tokenizer: &mut Tokenizer) -> Option<Token> {
     })
 }
 
-fn is_identifier(token: &char) -> bool {
-    lazy_static! {
-        static ref RE: Regex = Regex::new(r"[a-zA-Z]").unwrap();
-    }
-        
-    RE.is_match(&(*token).to_string())
-}
-
 pub fn parse_number(tokenizer: &mut Tokenizer) -> Option<Token> {
     let token = tokenizer.token().unwrap();
 
@@ -90,14 +87,6 @@ pub fn parse_number(tokenizer: &mut Tokenizer) -> Option<Token> {
     })
 }
 
-fn is_number(token: &char) -> bool {
-    lazy_static! {
-        static ref RE: Regex = Regex::new(r"[0-9]").unwrap();
-    }
-        
-    RE.is_match(&(*token).to_string())
-}
-
 pub fn parse_separator(tokenizer: &mut Tokenizer) -> Option<Token> {
     let token = tokenizer.token().unwrap();
 
@@ -118,10 +107,6 @@ pub fn parse_separator(tokenizer: &mut Tokenizer) -> Option<Token> {
         value,
         range: (start, end)
     })
-}
-
-fn is_separator(token: &char) -> bool {
-    *token == '.' || *token == ','
 }
 
 pub fn parse_parenthesis(tokenizer: &mut Tokenizer) -> Option<Token> {
@@ -146,10 +131,6 @@ pub fn parse_parenthesis(tokenizer: &mut Tokenizer) -> Option<Token> {
     })
 }
 
-fn is_parenthesis(token: &char) -> bool {
-    *token == '(' || *token == ')'
-}
-
 pub fn parse_terminator(tokenizer: &mut Tokenizer) -> Option<Token> {
     let token = tokenizer.token().unwrap();
 
@@ -172,10 +153,6 @@ pub fn parse_terminator(tokenizer: &mut Tokenizer) -> Option<Token> {
     })
 }
 
-fn is_terminator(token: &char) -> bool {
-    *token == ';'
-}
-
 pub fn parse_curly_brace(tokenizer: &mut Tokenizer) -> Option<Token> {
     let token = tokenizer.token().unwrap();
 
@@ -196,10 +173,6 @@ pub fn parse_curly_brace(tokenizer: &mut Tokenizer) -> Option<Token> {
         value,
         range: (start, end)
     })
-}
-
-fn is_curly_brace(token: &char) -> bool {
-    *token == '{' || *token == '}'
 }
 
 pub fn parse_operator(tokenizer: &mut Tokenizer) -> Option<Token> {
@@ -230,25 +203,6 @@ pub fn parse_operator(tokenizer: &mut Tokenizer) -> Option<Token> {
         value,
         range: (start, end)
     })
-}
-
-fn is_operator(token: &char) -> bool {
-    match *token {
-        '=' |
-        '>' |
-        '<' | 
-        '!' |
-        '+' |
-        '-' |
-        '/' |
-        '*' |
-        '%' |
-        '&' |
-        '|' |
-        '^' |
-        '~' => true,
-        _ => false
-    }
 }
 
 pub fn parse_line_comment(tokenizer: &mut Tokenizer) -> Option<()> {
@@ -334,7 +288,7 @@ pub fn parse_string(tokenizer: &mut Tokenizer) -> Option<Token> {
 
         // Do not let the escape char go into the normal value string
         if is_escape_char(tokenizer.token().unwrap()) &&
-            is_delimiter(tokenizer.peek().unwrap_or(&' ')) {
+            is_string_delimiter(tokenizer.peek().unwrap_or(&' ')) {
             value.pop();
         }
 
@@ -354,16 +308,8 @@ pub fn parse_string(tokenizer: &mut Tokenizer) -> Option<Token> {
     })
 }
 
-fn is_delimiter(token: &char) -> bool {
-    *token == '\'' || *token == '\"'
-}
-
-fn is_escape_char(token: &char) -> bool {
-    *token == '\\'
-}
-
 fn is_start_string(token: &char) -> Option<char> {
-    if is_delimiter(token) {
+    if is_string_delimiter(token) {
         return Some(token.clone());
     }
 

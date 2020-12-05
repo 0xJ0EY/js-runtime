@@ -1,4 +1,4 @@
-var test = 1337;
+var test = "monkaS";
 
 log("JScript > Sanlang");
 log(test);

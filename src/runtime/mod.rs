@@ -1,10 +1,8 @@
-extern crate regex;
-use regex::Regex;
 
 use core::panic;
 use std::collections::{HashMap, LinkedList};
 
-use crate::ast::{AstProgram, nodes::{AstNode, CallExpressionCallee, ExpressionStatement, ExpressionStatementExpression, Literal, VariableDeclaration, VariableLiteral}};
+use crate::{ast::{AstProgram, nodes::{AstNode, CallExpressionCallee, ExpressionStatement, ExpressionStatementExpression, Literal, VariableDeclaration, VariableLiteral}}, util::is_number};
 
 pub struct FunctionCall {
     function_type: FunctionCallType,
@@ -228,15 +226,6 @@ fn parse_expression_statement(runtime: &mut Runtime, statement: &ExpressionState
 
     // Exit temporary scope
     runtime.pop_scope();
-}
-
-
-fn is_number(token: &char) -> bool {
-    lazy_static! {
-        static ref RE: Regex = Regex::new(r"[0-9]").unwrap();
-    }
-        
-    RE.is_match(&(*token).to_string())
 }
 
 fn parse_expression_statement_args(statement: &ExpressionStatement) -> &Vec<Literal> {
