@@ -31,14 +31,14 @@ impl Literal {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BinaryLiteral { // TODO: Change this to a binary literal
     pub value: String,
     pub raw_value: String,
     pub range: (usize, usize)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum VariableLiteral {
     Literal(Literal),
     BinaryLiteral(BinaryLiteral)
