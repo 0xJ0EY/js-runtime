@@ -336,66 +336,32 @@ pub fn parse_expression_statement(parser: &mut AstParser) -> Option<ExpressionSt
     let terminator = parser.consume().unwrap();
     let end = terminator.range.1;
 
-    /*    
-        ExpressionStatement
-            CallExpression
-                callee = Identifier | MemberExpression
-                arguments
-                range
-            range
-
-        MemberExpression
-            object = Identifier | MemberExpression
-            property = Identifier
-            range
-
-    */
-
-    let callee = build_call_expression(&mut identifiers, arguments); 
-
-    // Some(ExpressionStatement {
-    //     expression: CallExpression {
-    //         callee: CallExpressionCallee::Identifier(identifiers.pop().unwrap()),
-    //     },
-    //     range: (start, end)
-    // })
-
-
-    // Some(ExpressionStatement {
-    //     expression: ExpressionStatementExpression::CallExpression(
-    //         CallExpression {
-    //             callee: CallExpressionCallee::Identifier(identifier),
-    //             arguments,
-    //             range: name_range.clone(),
-    //         }
-    //     ),
-    //     range: (start, end)
-    // })
-
-    todo!("this");
+    Some(ExpressionStatement {
+        expression: CallExpression {
+            callee: build_callee(&mut identifiers),
+            arguments,
+            range: (start, end)
+        },
+        range: (start, end)
+    })
 }
 
-struct RawLink<T> { p: *mut T }
-
-fn build_call_expression(identifiers: &mut VecDeque<Box<Identifier>>, arguments: Vec<Literal>) -> CallExpression {
+fn build_callee(identifiers: &mut VecDeque<Box<Identifier>>) -> CallExpressionCallee {
 
     // If the identifiers length == 1, return an CallExpression
     // Otherwise build a stack from the MemberExpressions
     if identifiers.len() == 1 {
         let identifier = identifiers.remove(0).unwrap();
-        let range = identifier.range.clone();
+        return CallExpressionCallee::Identifier(identifier);
 
-        return CallExpression {
-            callee: CallExpressionCallee::Identifier(identifier),
-            arguments,
-            range
-        }
     } else {
         let identifier = identifiers.pop_front().unwrap();
 
         // Use RefCell for dynamic borrow checking, as the while loop doesn't really like the static borrow checker from the compiler.
-        let root_member_object = RefCell::new(MemberExpression::new(*identifier));
-        let last_expression_ref = &root_member_object;
+        let root_member_expression = RefCell::new(MemberExpression::new(*identifier));
+
+        // Use this reference of a RefCell to keep track of the lastest item in the stack.
+        let last_expression_ref = &root_member_expression;
 
         while identifiers.len() > 0 {
             let identifier = identifiers.pop_front().unwrap();
@@ -416,15 +382,14 @@ fn build_call_expression(identifiers: &mut VecDeque<Box<Identifier>>, arguments:
                 .object = member_expression_object;
         }
 
-        dbg!(root_member_object);
+        let boxed_root_member_expression = Box::new(
+            root_member_expression.borrow_mut().to_owned()
+        );
+        return CallExpressionCallee::MemberExpression(boxed_root_member_expression);
     }
-
-    todo!("todo")
 }
 
 pub fn is_expression_statement(parser: &AstParser) -> bool {
-
-    // TODO: We currently only support CallExpression statements
 
     // Check if the expression statement has MemberExpressions
     // Defined by a chain of 'Literal' -> '.' until the final expression
