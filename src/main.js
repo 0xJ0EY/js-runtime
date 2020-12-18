@@ -1,4 +1,1 @@
-var test = "monkaS";
-
-log("JScript > Sanlang");
-log(test);
+console.log("JScript > Sanlang");

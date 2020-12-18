@@ -1,6 +1,6 @@
 use crate::tokenizer::TokenType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Identifier {
     pub name: String,
     pub range: (usize, usize)
@@ -80,33 +80,39 @@ pub struct CallExpression {
 
 #[derive(Debug)]
 pub enum CallExpressionCallee {
-    Identifier(Identifier),
-    MemberExpression(MemberExpression),
+    Identifier(Box<Identifier>),
+    MemberExpression(Box<MemberExpression>),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MemberExpression {
-    pub object: Box<MemberExpressionObject>,
+    pub object: Option<Box<MemberExpression>>,
     pub property: Identifier,
     pub range: (usize, usize),
 }
 
+impl MemberExpression {
+    pub fn new(property: Identifier) -> Self {
+        let range = property.range.clone();
+        
+        Self {
+            object: None,
+            property,
+            range
+        }
+    }
+}
+
 #[derive(Debug)]
 pub enum MemberExpressionObject {
-    Identifier(Identifier),
-    MemberExpression(MemberExpression),
+    Identifier(Box<Identifier>),
+    MemberExpression(Box<MemberExpression>),
 }
 
 #[derive(Debug)]
 pub struct ExpressionStatement {
-    pub expression: ExpressionStatementExpression,
+    pub expression: CallExpression,
     pub range: (usize, usize),
-}
-
-#[derive(Debug)]
-pub enum ExpressionStatementExpression {
-    CallExpression(CallExpression),
-    MemberExpression(MemberExpression),
 }
 
 #[derive(Debug)]

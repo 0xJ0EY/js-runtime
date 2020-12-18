@@ -1,6 +1,8 @@
+use std::cell::RefCell;
+
 use crate::tokenizer::{Token, TokenType};
 
-use super::{nodes::AstNode, nodes::BlockStatement, nodes::CallExpressionCallee, nodes::ExpressionStatement, nodes::ExpressionStatementExpression, nodes::FunctionDeclaration, nodes::Identifier, nodes::Literal, nodes::VariableDeclaration, nodes::VariableDeclarator, nodes::VariableLiteral, parser::AstParser, nodes::CallExpression};
+use super::{nodes::AstNode, nodes::BlockStatement, nodes::CallExpression, nodes::ExpressionStatement, nodes::FunctionDeclaration, nodes::Identifier, nodes::Literal, nodes::VariableDeclaration, nodes::VariableDeclarator, nodes::{CallExpressionCallee, MemberExpression, VariableLiteral}, parser::AstParser};
 
 /*
 Block statement
@@ -269,19 +271,31 @@ Expression statement
 */
 pub fn parse_expression_statement(parser: &mut AstParser) -> Option<ExpressionStatement> {
 
-    // TODO: We currently only support CallExpression statements
-
-    let identifier;
-    let name_range;
+    let mut identifiers = Vec::new();
     let mut arguments = Vec::new();
 
-    {
+    let start = parser.peek_current()
+        .unwrap()
+        .range
+        .clone().0;
+
+    loop {
         let name = parser.consume().unwrap();
-        name_range = name.range.clone();
-        identifier = Identifier {
+
+        let identifier = Box::new(Identifier {
             name: name.value.clone(),
             range: name.range.clone()
-        };
+        });
+
+        identifiers.push(identifier);
+
+        let seperator = parser.peek_current().unwrap();
+
+        if !is_expression_seperator(seperator) {
+            break;
+        }
+
+        parser.step();
     }
 
     parser.step(); // Skip open paren
@@ -322,40 +336,132 @@ pub fn parse_expression_statement(parser: &mut AstParser) -> Option<ExpressionSt
     let terminator = parser.consume().unwrap();
     let end = terminator.range.1;
 
-    Some(ExpressionStatement {
-        expression: ExpressionStatementExpression::CallExpression(
-            CallExpression {
-                callee: CallExpressionCallee::Identifier(identifier),
-                arguments,
-                range: name_range.clone(),
-            }
-        ),
-        range: (name_range.0, end)
-    })
+    /*    
+        ExpressionStatement
+            CallExpression
+                callee = Identifier | MemberExpression
+                arguments
+                range
+            range
+
+        MemberExpression
+            object = Identifier | MemberExpression
+            property = Identifier
+            range
+
+    */
+
+    let callee = build_call_expression(&mut identifiers, arguments); 
+
+    // Some(ExpressionStatement {
+    //     expression: CallExpression {
+    //         callee: CallExpressionCallee::Identifier(identifiers.pop().unwrap()),
+    //     },
+    //     range: (start, end)
+    // })
+
+
+    // Some(ExpressionStatement {
+    //     expression: ExpressionStatementExpression::CallExpression(
+    //         CallExpression {
+    //             callee: CallExpressionCallee::Identifier(identifier),
+    //             arguments,
+    //             range: name_range.clone(),
+    //         }
+    //     ),
+    //     range: (start, end)
+    // })
+
+    todo!("this");
+}
+
+struct RawLink<T> { p: *mut T }
+
+fn build_call_expression(identifiers: &mut Vec<Box<Identifier>>, arguments: Vec<Literal>) -> CallExpression {
+
+    // If the identifiers length == 1, return an CallExpression
+    // Otherwise build a stack from the MemberExpressions
+
+
+    if identifiers.len() == 1 {
+        let identifier = identifiers.remove(0);
+        let range = identifier.range.clone();
+
+        return CallExpression {
+            callee: CallExpressionCallee::Identifier(identifier),
+            arguments,
+            range
+        }
+    } else {
+        let identifier = identifiers.pop().unwrap();
+
+        // Use RefCell for dynamic borrow checking, as the while loop doesn't really like the static borrow checker from the compiler.
+        let root_member_object = RefCell::new(MemberExpression::new(*identifier));
+        let last_expression_ref = &root_member_object;
+
+        while identifiers.len() > 0 {
+            let identifier = identifiers.pop().unwrap();
+
+            let member_expression = RefCell::new(MemberExpression::new(*identifier));
+            
+            // Wrap the value in a box, to store it on the heap
+            let member_expression_object = Some(
+                Box::new(
+                    member_expression.borrow_mut().to_owned()
+                )
+            );
+
+            // 
+            last_expression_ref.try_borrow_mut()
+                .unwrap()
+                .object = member_expression_object;
+        }
+
+        dbg!(root_member_object);
+    }
+
+    todo!("todo")
 }
 
 pub fn is_expression_statement(parser: &AstParser) -> bool {
 
     // TODO: We currently only support CallExpression statements
 
-    let name = parser.peek_steps(0);
-    if name.is_none() || !is_expression_name(name.unwrap()) {
-        return false;
+    // Check if the expression statement has MemberExpressions
+    // Defined by a chain of 'Literal' -> '.' until the final expression
+    // For example: console.log('foobar');
+    // Where console is the MemberExpression and log is the last expression (So the call expression)
+
+    let mut offset = 0;
+    
+    loop {
+        let name = parser.peek_steps(offset);
+        if name.is_none() || !is_expression_name(name.unwrap()) {
+            break;
+        }
+
+        offset += 1;
+
+        let seperator = parser.peek_steps(offset);
+        if seperator.is_none() || !is_expression_seperator(seperator.unwrap()) {
+            break;
+        }
+
+        offset += 1;
     }
 
-    let open_paren = parser.peek_steps(1);
+    let open_paren = parser.peek_steps(0 + offset);
     if open_paren.is_none() || !is_function_open_parenthesis(open_paren.unwrap()) {
         return false;
     }
 
-    let mut offset = 0;
-
     // Check for parameters
-    let param = parser.peek_steps(2);
+    let param = parser.peek_steps(offset + 1);
+
     if param.is_some() && is_expression_param(param.unwrap()) {
         loop {
+            let param = parser.peek_steps(offset + 1);
             offset += 1;
-            let param = parser.peek_steps(2 + offset);
         
             if param.is_none() {
                 return false;
@@ -367,13 +473,12 @@ pub fn is_expression_statement(parser: &AstParser) -> bool {
         }
     }
 
-    let close_paren = parser.peek_steps(2 + offset);
-
+    let close_paren = parser.peek_steps(offset);;
     if close_paren.is_none() || !is_function_close_parenthesis(close_paren.unwrap()) {
         return false;
     }
 
-    let terminator = parser.peek_steps(3 + offset);
+    let terminator = parser.peek_steps(1 + offset);
     if terminator.is_none() || !is_variable_terminator(terminator.unwrap()) {
         return false;
     }
@@ -385,6 +490,10 @@ fn is_expression_param(token: &Token) -> bool {
     token.token_type == TokenType::Identifier || 
     token.token_type == TokenType::Number || 
     token.token_type == TokenType::String
+}
+
+fn is_expression_seperator(token: &Token) -> bool {
+    token.token_type == TokenType::Separator && token.value == ".".to_string()
 }
 
 fn is_expression_param_seperator(token: &Token) -> bool {

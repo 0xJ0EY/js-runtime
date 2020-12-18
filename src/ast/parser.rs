@@ -29,6 +29,10 @@ impl<'a> AstParser<'a> {
         self.tokens.get(self.index + 1)
     }
 
+    pub fn peek_current(&self) -> Option<&Token> {
+        self.tokens.get(self.index)
+    }
+
     pub fn peek_steps(&self, steps: usize) -> Option<&Token> {
         self.tokens.get(self.index + steps)
     }

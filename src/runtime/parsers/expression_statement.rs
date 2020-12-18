@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{ast::nodes::ExpressionStatement, util::is_identifier, ast::nodes::{CallExpressionCallee, ExpressionStatementExpression, Literal, VariableLiteral}, runtime::{nodes::FunctionCallType, Runtime}, util::is_number};
+use crate::{ast::nodes::ExpressionStatement, util::is_identifier, ast::nodes::{CallExpressionCallee, Literal, VariableLiteral}, runtime::{nodes::FunctionCallType, Runtime}, util::is_number};
 
 pub fn parse_expression_statement(runtime: &mut Runtime, statement: &ExpressionStatement) {
     let name = parse_expression_statement_name(&statement);
@@ -68,24 +68,28 @@ pub fn parse_expression_statement(runtime: &mut Runtime, statement: &ExpressionS
 }
 
 fn parse_expression_statement_args(statement: &ExpressionStatement) -> &Vec<Literal> {
-    match &statement.expression {
-        ExpressionStatementExpression::CallExpression(expression) => {
-            &expression.arguments
-        },
-        _ => { panic!("Unsupported expression: {:?}", &statement.expression) }
-    }
+    todo!("refactor");
+
+    // match &statement.expression {
+    //     ExpressionStatementExpression::CallExpression(expression) => {
+    //         &expression.arguments
+    //     },
+    //     _ => { panic!("Unsupported expression: {:?}", &statement.expression) }
+    // }
 }
 
 fn parse_expression_statement_name(statement: &ExpressionStatement) -> String {
-    match &statement.expression {
-        ExpressionStatementExpression::CallExpression(expression) => {
-            match &expression.callee {
-                CallExpressionCallee::Identifier(identifier) => {
-                    identifier.name.to_string()
-                }
-                _ => { panic!("Unsupported expression callee: {:?}", &expression.callee) }
-            }
-        },
-        _ => { panic!("Unsupported expression: {:?}", &statement.expression) }
-    }
+    todo!("refactor");
+
+    // match &statement.expression {
+    //     ExpressionStatementExpression::CallExpression(expression) => {
+    //         match &expression.callee {
+    //             CallExpressionCallee::Identifier(identifier) => {
+    //                 identifier.name.to_string()
+    //             }
+    //             _ => { panic!("Unsupported expression callee: {:?}", &expression.callee) }
+    //         }
+    //     },
+    //     _ => { panic!("Unsupported expression: {:?}", &statement.expression) }
+    // }
 }
