@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::{cell::RefCell, collections::VecDeque};
 
 use crate::tokenizer::{Token, TokenType};
 
@@ -271,7 +271,7 @@ Expression statement
 */
 pub fn parse_expression_statement(parser: &mut AstParser) -> Option<ExpressionStatement> {
 
-    let mut identifiers = Vec::new();
+    let mut identifiers = VecDeque::new();
     let mut arguments = Vec::new();
 
     let start = parser.peek_current()
@@ -287,7 +287,7 @@ pub fn parse_expression_statement(parser: &mut AstParser) -> Option<ExpressionSt
             range: name.range.clone()
         });
 
-        identifiers.push(identifier);
+        identifiers.push_back(identifier);
 
         let seperator = parser.peek_current().unwrap();
 
@@ -377,14 +377,12 @@ pub fn parse_expression_statement(parser: &mut AstParser) -> Option<ExpressionSt
 
 struct RawLink<T> { p: *mut T }
 
-fn build_call_expression(identifiers: &mut Vec<Box<Identifier>>, arguments: Vec<Literal>) -> CallExpression {
+fn build_call_expression(identifiers: &mut VecDeque<Box<Identifier>>, arguments: Vec<Literal>) -> CallExpression {
 
     // If the identifiers length == 1, return an CallExpression
     // Otherwise build a stack from the MemberExpressions
-
-
     if identifiers.len() == 1 {
-        let identifier = identifiers.remove(0);
+        let identifier = identifiers.remove(0).unwrap();
         let range = identifier.range.clone();
 
         return CallExpression {
@@ -393,17 +391,19 @@ fn build_call_expression(identifiers: &mut Vec<Box<Identifier>>, arguments: Vec<
             range
         }
     } else {
-        let identifier = identifiers.pop().unwrap();
+        let identifier = identifiers.pop_front().unwrap();
 
         // Use RefCell for dynamic borrow checking, as the while loop doesn't really like the static borrow checker from the compiler.
         let root_member_object = RefCell::new(MemberExpression::new(*identifier));
         let last_expression_ref = &root_member_object;
 
         while identifiers.len() > 0 {
-            let identifier = identifiers.pop().unwrap();
+            let identifier = identifiers.pop_front().unwrap();
 
             let member_expression = RefCell::new(MemberExpression::new(*identifier));
-            
+
+            last_expression_ref.swap(&member_expression);
+
             // Wrap the value in a box, to store it on the heap
             let member_expression_object = Some(
                 Box::new(
@@ -411,7 +411,6 @@ fn build_call_expression(identifiers: &mut Vec<Box<Identifier>>, arguments: Vec<
                 )
             );
 
-            // 
             last_expression_ref.try_borrow_mut()
                 .unwrap()
                 .object = member_expression_object;

@@ -1,1 +1,1 @@
-console.log("JScript > Sanlang");
+foo.bar.console.log("JScript > Sanlang");
