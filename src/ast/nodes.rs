@@ -104,12 +104,6 @@ impl MemberExpression {
 }
 
 #[derive(Debug)]
-pub enum MemberExpressionObject {
-    Identifier(Box<Identifier>),
-    MemberExpression(Box<MemberExpression>),
-}
-
-#[derive(Debug)]
 pub struct ExpressionStatement {
     pub expression: CallExpression,
     pub range: (usize, usize),

@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use std::{cell::RefCell, collections::HashMap};
 
-use crate::{ast::nodes::ExpressionStatement, util::is_identifier, ast::nodes::{CallExpressionCallee, Literal, VariableLiteral}, runtime::{nodes::FunctionCallType, Runtime}, util::is_number};
+use crate::{ast::nodes::ExpressionStatement, util::is_identifier, ast::nodes::{CallExpressionCallee, Literal, VariableLiteral}, runtime::{nodes::FunctionCallType, Runtime}};
 
 pub fn parse_expression_statement(runtime: &mut Runtime, statement: &ExpressionStatement) {
     let name = parse_expression_statement_name(&statement);
@@ -68,28 +68,36 @@ pub fn parse_expression_statement(runtime: &mut Runtime, statement: &ExpressionS
 }
 
 fn parse_expression_statement_args(statement: &ExpressionStatement) -> &Vec<Literal> {
-    todo!("refactor");
-
-    // match &statement.expression {
-    //     ExpressionStatementExpression::CallExpression(expression) => {
-    //         &expression.arguments
-    //     },
-    //     _ => { panic!("Unsupported expression: {:?}", &statement.expression) }
-    // }
+    &statement.expression.arguments
 }
 
 fn parse_expression_statement_name(statement: &ExpressionStatement) -> String {
-    todo!("refactor");
+    match &statement.expression.callee {
+        CallExpressionCallee::Identifier(identifier) => {
+            identifier.name.to_string()
+        },
+        CallExpressionCallee::MemberExpression(member_expression) => {
+            let current_member_expression = RefCell::new(member_expression);
 
-    // match &statement.expression {
-    //     ExpressionStatementExpression::CallExpression(expression) => {
-    //         match &expression.callee {
-    //             CallExpressionCallee::Identifier(identifier) => {
-    //                 identifier.name.to_string()
-    //             }
-    //             _ => { panic!("Unsupported expression callee: {:?}", &expression.callee) }
-    //         }
-    //     },
-    //     _ => { panic!("Unsupported expression: {:?}", &statement.expression) }
-    // }
+            let mut function_call = current_member_expression.try_borrow().unwrap().property.name.clone();
+
+            while current_member_expression.try_borrow().unwrap().object.is_some() {
+                let next_member_expression = current_member_expression.try_borrow()
+                    .unwrap()
+                    .object.as_ref()
+                    .unwrap();
+
+                let mut name = next_member_expression.property.name.clone();
+                name.push('.');
+
+                name.push_str(&function_call);
+                function_call = name;
+
+                current_member_expression.swap(&RefCell::new(next_member_expression));
+            }
+            
+            return function_call;
+        },
+        _ => { panic!("Unsupported expression: {:?}", &statement.expression.callee) }
+    }
 }
