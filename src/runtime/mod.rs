@@ -31,6 +31,9 @@ impl Runtime {
                 AstNode::ExpressionStatement(statement) => {
                     parse_expression_statement(self, statement);
                 },
+                AstNode::FunctionDeclaration(declaration) => {
+                    panic!("panik");  
+                },
                 _ => { panic!("Unsupported step: {:?}", step) }
             }
         }

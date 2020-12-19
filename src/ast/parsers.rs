@@ -414,7 +414,7 @@ pub fn is_expression_statement(parser: &AstParser) -> bool {
         offset += 1;
     }
 
-    let open_paren = parser.peek_steps(0 + offset);
+    let open_paren = parser.peek_steps(offset);
     if open_paren.is_none() || !is_function_open_parenthesis(open_paren.unwrap()) {
         return false;
     }
@@ -425,8 +425,7 @@ pub fn is_expression_statement(parser: &AstParser) -> bool {
     if param.is_some() && is_expression_param(param.unwrap()) {
         loop {
             let param = parser.peek_steps(offset + 1);
-            offset += 1;
-        
+    
             if param.is_none() {
                 return false;
             }
@@ -434,15 +433,17 @@ pub fn is_expression_statement(parser: &AstParser) -> bool {
             if param.is_some() && is_function_close_parenthesis(param.unwrap()) {
                 break;
             }
+
+            offset += 1;
         }
     }
 
-    let close_paren = parser.peek_steps(offset);;
+    let close_paren = parser.peek_steps(offset + 1);
     if close_paren.is_none() || !is_function_close_parenthesis(close_paren.unwrap()) {
         return false;
     }
 
-    let terminator = parser.peek_steps(1 + offset);
+    let terminator = parser.peek_steps(offset + 2);
     if terminator.is_none() || !is_variable_terminator(terminator.unwrap()) {
         return false;
     }

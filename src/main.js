@@ -1,1 +1,5 @@
-console.log("MemberExpression support");
+function test() {
+}
+
+test();
+testWithParams("foobar");

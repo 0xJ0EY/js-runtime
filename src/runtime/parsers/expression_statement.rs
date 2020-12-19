@@ -48,7 +48,7 @@ pub fn parse_expression_statement(runtime: &mut Runtime, statement: &ExpressionS
                 VariableLiteral::Literal(literal) => {
                     value = literal.clone();
                 },
-                _ => { println!("Unsupported variable type") }
+                _ => { panic!("Unsupported variable type") }
             }
 
         }
