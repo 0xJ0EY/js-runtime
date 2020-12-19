@@ -1,1 +1,1 @@
-foo.bar.console.log("JScript > Sanlang");
+console.log("MemberExpression support");

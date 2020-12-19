@@ -40,7 +40,7 @@ impl BlockScope {
     pub fn new_root() -> BlockScope {
         let mut functions = HashMap::<String, FunctionCall>::new();
 
-        functions.insert("log".to_string(), FunctionCall { 
+        functions.insert("console.log".to_string(), FunctionCall { 
             function_type: FunctionCallType::SystemCall(
                 SystemCall::new(|x| { 
                     let output = x.get(&"output".to_string()).unwrap(); 

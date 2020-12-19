@@ -9,7 +9,7 @@ pub fn parse_expression_statement(runtime: &mut Runtime, statement: &ExpressionS
 
     if function.is_none() {
         runtime.pop_scope();
-        return;
+        panic!("Function with the name \"{}\" not found", name);
     }
 
     // Create temporary scope
