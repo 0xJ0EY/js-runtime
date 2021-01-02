@@ -13,8 +13,14 @@ pub struct AstProgram {
 
 impl AstProgram {
     pub fn new() -> AstProgram {
-        AstProgram {
+        Self {
             body: Vec::new(),
+        }
+    }
+
+    pub fn from_body(body: &Vec<AstNode>) -> AstProgram {
+        Self {
+            body: body.clone(),
         }
     }
 }

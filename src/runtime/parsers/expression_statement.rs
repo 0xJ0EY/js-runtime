@@ -1,6 +1,6 @@
 use std::{cell::RefCell, collections::HashMap};
 
-use crate::{ast::nodes::ExpressionStatement, util::is_identifier, ast::nodes::{CallExpressionCallee, Literal, VariableLiteral}, runtime::{nodes::FunctionCallType, Runtime}};
+use crate::{ast::nodes::ExpressionStatement, ast::{AstProgram, nodes::{CallExpressionCallee, Literal, VariableLiteral}}, runtime::{nodes::FunctionCallType, Runtime}, util::is_identifier};
 
 pub fn parse_expression_statement(runtime: &mut Runtime, statement: &ExpressionStatement) {
     let name = parse_expression_statement_name(&statement);
@@ -43,7 +43,6 @@ pub fn parse_expression_statement(runtime: &mut Runtime, statement: &ExpressionS
                 panic!("{:?} is not defined", variable)
             }
 
-
             match variable.unwrap() {
                 VariableLiteral::Literal(literal) => {
                     value = literal.clone();
@@ -59,6 +58,10 @@ pub fn parse_expression_statement(runtime: &mut Runtime, statement: &ExpressionS
     match &function.function_type {
         FunctionCallType::SystemCall(syscall) => {
             (syscall.func)(&args_map);
+        },
+        FunctionCallType::RuntimeCall(runtime_call) => {
+            let program = AstProgram::from_body(&runtime_call.body);
+            runtime.run(&program);
         },
         _ => { panic!("Unsupported function type") }
     }

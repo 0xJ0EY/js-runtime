@@ -2,7 +2,7 @@
 use core::panic;
 use crate::{ast::{AstProgram, nodes::{AstNode, VariableLiteral}}};
 
-use self::{nodes::{BlockScope, FunctionCall}, parsers::{expression_statement::parse_expression_statement, variable_declaration::parse_variable_declaration}};
+use self::{nodes::{BlockScope, FunctionCall}, parsers::{expression_statement::parse_expression_statement, parse_function_declaration::parse_function_declaration, variable_declaration::parse_variable_declaration}};
 
 mod nodes;
 mod parsers;
@@ -32,7 +32,7 @@ impl Runtime {
                     parse_expression_statement(self, statement);
                 },
                 AstNode::FunctionDeclaration(declaration) => {
-                    panic!("panik");  
+                    parse_function_declaration(self, declaration);
                 },
                 _ => { panic!("Unsupported step: {:?}", step) }
             }

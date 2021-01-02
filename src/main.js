@@ -1,5 +1,5 @@
 function test() {
+    console.log("pogChamp");
 }
 
-test();
-testWithParams("foobar");
+console.log("feelsBadMan");

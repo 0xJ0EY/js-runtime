@@ -44,6 +44,14 @@ pub fn parse_block_statement(parser: &mut AstParser) -> Option<BlockStatement> {
             body.push(value);
         }
 
+        // Expression statement
+        let expression_statement = parse_expression_statement(parser);
+        if expression_statement.is_some() {
+            let value = AstNode::ExpressionStatement(expression_statement.unwrap());
+
+            body.push(value);
+        }
+
         consumed = parser.consume();
     }
 

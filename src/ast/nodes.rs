@@ -44,26 +44,26 @@ pub enum VariableLiteral {
     BinaryLiteral(BinaryLiteral)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct VariableDeclarator {
     pub id: Identifier,
     pub init: VariableLiteral,
     pub range: (usize, usize)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct VariableDeclaration {
     pub declarations: Vec<VariableDeclarator>,
     pub range: (usize, usize)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BlockStatement {
     pub body: Vec<AstNode>,
     pub range: (usize, usize)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FunctionDeclaration {
     pub id: Identifier,
     pub params: Vec<Identifier>,
@@ -71,14 +71,14 @@ pub struct FunctionDeclaration {
     pub range: (usize, usize)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CallExpression {
     pub callee: CallExpressionCallee,
     pub arguments: Vec<Literal>,
     pub range: (usize, usize),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum CallExpressionCallee {
     Identifier(Box<Identifier>),
     MemberExpression(Box<MemberExpression>),
@@ -103,13 +103,13 @@ impl MemberExpression {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ExpressionStatement {
     pub expression: CallExpression,
     pub range: (usize, usize),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum AstNode {
     VariableDeclaration(VariableDeclaration),
     BlockStatement(BlockStatement),

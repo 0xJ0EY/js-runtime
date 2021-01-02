@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::ast::nodes::{Literal, VariableLiteral};
+use crate::ast::nodes::{BlockStatement, Literal, VariableLiteral};
 
 pub struct FunctionCall {
     pub function_type: FunctionCallType,
@@ -21,7 +21,7 @@ impl SystemCall {
 
 pub enum FunctionCallType {
     SystemCall(SystemCall),
-    RuntimeCall
+    RuntimeCall(BlockStatement)
 }
 
 pub struct BlockScope {
